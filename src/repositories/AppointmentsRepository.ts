@@ -9,10 +9,10 @@ class AppointmentsRepository {
   }
 
   public findByDate(date: Date): Appointment | null {
-    const x = this.appointments.find(appointment =>
+    const findAppointment = this.appointments.find(appointment =>
       isEqual(appointment.date, date),
     );
-    return x || null;
+    return findAppointment || null;
   }
 
   public create(provider: string, date: Date): Appointment {

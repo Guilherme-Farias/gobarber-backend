@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { sign } from 'jsonwebtoken';
 import User from '../models/User';
 import authConfig from '../config/auth';
+import AppError from '../errors/AppError';
 
 interface Request {
   email: string;
@@ -19,13 +20,19 @@ class AuthenticateUserService {
     const user = await usersRepository.findOne({ where: { email } });
 
     if (!user) {
-      throw new Error('Incorrect email/password combination');
+      throw new AppError({
+        message: 'Incorrect email/password combination',
+        statusCode: 401,
+      });
     }
 
     const passwordMatched = await compare(password, user.password);
 
     if (!passwordMatched) {
-      throw new Error('Incorrect email/password combination');
+      throw new AppError({
+        message: 'Incorrect email/password combination',
+        statusCode: 401,
+      });
     }
 
     const { secret, expiresIn } = authConfig.jwt;

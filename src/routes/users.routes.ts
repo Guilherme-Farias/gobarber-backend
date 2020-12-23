@@ -9,15 +9,36 @@ const usersRouter = Router();
 const upload = multer(uploadConfig);
 
 usersRouter.post('/', async (request, response) => {
-  try {
-    const { name, email, password } = request.body;
-    const createUserService = new CreateUserService();
-    const user = await createUserService.execute({
-      name,
-      email,
-      password,
-    });
+  const { name, email, password } = request.body;
+  const createUserService = new CreateUserService();
+  const user = await createUserService.execute({
+    name,
+    email,
+    password,
+  });
 
+  const userWithoutPassword = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  };
+
+  return response.status(201).json(userWithoutPassword);
+});
+
+usersRouter.patch(
+  '/avatar',
+  ensureAuthenticated,
+  upload.single('avatar'),
+  async (request, response) => {
+    const updateUserAvatarService = new UpdateUserAvatarService();
+    const user = await updateUserAvatarService.execute({
+      user_id: request.user.id,
+      avatarFilename: request.file.filename,
+    });
     const userWithoutPassword = {
       id: user.id,
       name: user.name,
@@ -26,36 +47,7 @@ usersRouter.post('/', async (request, response) => {
       created_at: user.created_at,
       updated_at: user.updated_at,
     };
-
-    return response.status(201).json(userWithoutPassword);
-  } catch (err) {
-    return response.status(err.statusCode).json({ error: err.message });
-  }
-});
-
-usersRouter.patch(
-  '/avatar',
-  ensureAuthenticated,
-  upload.single('avatar'),
-  async (request, response) => {
-    try {
-      const updateUserAvatarService = new UpdateUserAvatarService();
-      const user = await updateUserAvatarService.execute({
-        user_id: request.user.id,
-        avatarFilename: request.file.filename,
-      });
-      const userWithoutPassword = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-      };
-      return response.status(200).json(userWithoutPassword);
-    } catch (err) {
-      return response.status(err.statusCode).json({ error: err.message });
-    }
+    return response.status(200).json(userWithoutPassword);
   },
 );
 
